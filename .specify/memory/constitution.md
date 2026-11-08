@@ -1,55 +1,233 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+Version change: unversioned template -> 1.0.0 (initial project constitution)
+Modified principles (placeholder -> adopted title):
+- PRINCIPLE_1_NAME -> I. Offline-First Privacy
+- PRINCIPLE_2_NAME -> II. Exact Money and Consistent History
+- PRINCIPLE_3_NAME -> III. Durable, History-Preserving Storage
+- PRINCIPLE_4_NAME -> IV. Accessible, Deliberate Mobile Interaction
+- PRINCIPLE_5_NAME -> V. Test-First Verification
+- PRINCIPLE_6_NAME -> VI. Minimal Scope and Explicit Decisions
+Added sections:
+- Product and Technical Constraints (replaces SECTION_2_NAME)
+- Development Workflow and Quality Gates (replaces SECTION_3_NAME)
+- Concrete governance, amendment, versioning, and compliance rules
+Removed sections: none; example comments and placeholder descriptions replaced.
+Dependent artifacts:
+- ✅ UPDATED: .specify/templates/plan-template.md
+- ✅ UPDATED: .specify/templates/spec-template.md
+- ✅ UPDATED: .specify/templates/tasks-template.md
+- ✅ UPDATED: .claude/commands/sp.constitution.md (actual command-directory fallback)
+- ✅ UPDATED: .claude/commands/sp.plan.md (local contracts and exception approval)
+- ✅ UPDATED: .claude/commands/sp.specify.md (offline, scope-respecting defaults)
+- ✅ UPDATED: .claude/commands/sp.tasks.md (mandatory tests; no assumed V1 API)
+- ✅ REVIEWED: all 13 .claude/commands/*.md and agent-file-template.md;
+  remaining command files and runtime template require no amendments.
+- NOT PRESENT: .specify/templates/commands/ (review actual .claude/commands/ instead)
+- NOT PRESENT: README.md, docs/quickstart.md, CLAUDE.md (no restoration requested)
+- REVIEWED: docs/expense-tracker-summary.md (no scope amendment needed)
+- REVIEWED: docs/superpowers/specs/2026-11-03-expense-tracker-screens-design.md
+  (approved visual direction; proposed field limits remain subject to spec review)
+Deferred placeholders: none.
+Follow-up decisions: approve the implementation stack, supported OS versions, field limits,
+and measurable performance targets in feature planning; these are not constitution gaps.
+-->
+# Personal Expense Tracker Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Offline-First Privacy
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+- All V1 expense entry, browsing, editing, category management, and settings MUST work
+  without a network connection, account, or server.
+- Expense records and preferences MUST remain in application-private device storage.
+  The app MUST NOT transmit financial data, notes, categories, or user identifiers to
+  analytics, advertising, crash-reporting, or other remote services.
+- Required fonts and interface assets MUST be available offline. V1 MUST NOT introduce
+  network-dependent startup or permissions unrelated to its local tracking workflows.
+- Platform-managed backup and device-transfer behavior MUST be explicitly reviewed and
+  configured to prevent automatic off-device copies of expense data in V1. Release
+  evidence MUST document the Android and iOS settings and any platform limitations;
+  an unresolved conflict with device-only storage blocks release.
+- Diagnostic output MUST exclude expense amounts, dates, notes, category names, and
+  database contents. Error codes and non-sensitive operational context are permitted.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+**Rationale:** Device-only storage is a product promise, not merely the absence of a
+custom synchronization service.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### II. Exact Money and Consistent History
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+- V1 MUST store, calculate, and display expenses in PKR only. Persisted monetary values
+  and all aggregations MUST use integer minor units or exact decimal arithmetic;
+  binary floating-point money calculations are prohibited.
+- Amount input MUST reject zero, negative, malformed, and unsupported-precision values.
+  At most two fractional digits are permitted. Approved feature specifications MUST
+  define and test bounds, formatting, rounding policy, and overflow handling; input
+  MUST NOT be silently rounded or truncated.
+- For a given date range and category filter, totals, subtotals, counts, and displayed
+  entries MUST derive from the same records. An edit or deletion MUST update every
+  affected view without double-counting or creating an unintended second expense.
+- Expense dates MUST be interpreted as local calendar dates. Feature specifications
+  MUST define inclusive/exclusive range boundaries and week-start behavior. Date
+  handling MUST NOT silently move an expense to another day after timezone changes.
 
-### [PRINCIPLE_6_NAME]
+**Rationale:** A tracker that produces inconsistent or inexact totals cannot provide
+reliable spending history.
 
+### III. Durable, History-Preserving Storage
 
-[PRINCIPLE__DESCRIPTION]
+- Successful writes MUST survive app termination and restart. Expense changes and
+  related data updates MUST be atomic or provide equivalent all-or-nothing guarantees.
+  Success feedback MUST occur only after persistence succeeds.
+- Failed reads MUST NOT appear as an empty history. Failed writes MUST retain user
+  input, provide an actionable error, and leave saved records consistent. The app MUST
+  NOT silently reset, replace, or discard an existing store after an error.
+- Category identity MUST remain stable through renaming. Archiving MUST hide a category
+  from new entries while preserving its existing expenses and allowing restoration.
+  Categories MUST NOT cascade-delete expenses. A protected active fallback category
+  MUST remain available.
+- Expense deletion MUST require an explicit confirmation naming the target entry and
+  explaining its effect. Until confirmation, saved data MUST remain unchanged.
+- Schema changes MUST include a versioned migration strategy and automated tests that
+  preserve existing records, relationships, and monetary values. Destructive migrations
+  and silent database recreation are prohibited.
+- First-use and Settings screens MUST disclose that losing the phone, uninstalling the
+  app, or clearing its data may permanently erase history. V1 MUST NOT promise recovery,
+  backup, or synchronization that does not exist.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+**Rationale:** With no recovery feature, accidental local data loss is especially costly.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### IV. Accessible, Deliberate Mobile Interaction
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+- Android and iPhone MUST support the same core expense workflows. Platform-specific
+  navigation, keyboards, safe areas, and accessibility semantics MUST be respected.
+- The approved screen direction MUST guide implementation: Overview, History, and
+  Categories as primary navigation; accessible labeled expense entry; light and dark
+  themes; clear Settings and empty states. Visual details belong in the screen design
+  specification, not duplicated as constitutional constants.
+- Normal text MUST meet at least 4.5:1 contrast, large text at least 3:1, and meaningful
+  non-text controls at least 3:1 against adjacent colors. Touch targets MUST be at
+  least 44 points on iOS and 48 dp on Android.
+- Controls MUST expose labels and states to screen readers, support system text scaling
+  and reduced motion, and remain usable with the keyboard open. Essential actions MUST
+  NOT rely on color, hover, or swipe gestures alone.
+- Forms MUST preserve valid input after errors, show errors beside the relevant fields,
+  and provide predictable back/cancel behavior. Leaving a changed form MUST require
+  explicit discard confirmation. Save actions MUST prevent duplicate submissions and
+  provide immediate feedback without moving surrounding controls.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+**Rationale:** Daily entry must be usable, understandable, and safe on both target platforms.
+
+### V. Test-First Verification
+
+- New production behavior and defect fixes MUST begin with an automated test that fails
+  for the intended missing behavior, followed by the implementation and a passing run.
+  Tests MUST precede implementation in generated task lists. Documentation-only changes
+  require consistency validation rather than artificial application tests.
+- Automated coverage MUST include exact monetary calculations and boundaries, date-range
+  and filter consistency, entry validation, create/edit/delete persistence across
+  restart, category rename/archive/restore, storage failures, and schema migrations
+  whenever the changed feature affects those behaviors.
+- Screen changes MUST be verified for both themes, phone-sized portrait and landscape
+  layouts, large system text, reduced motion, screen-reader labeling, safe areas, and
+  keyboard-open forms. Release checks MUST exercise core flows offline on both Android
+  and iOS; emulator/simulator versus physical-device evidence MUST be identified.
+- Completion claims MUST cite fresh test or inspection evidence and identify skipped
+  checks or environmental limits. A browser mockup MUST NOT count as native behavior,
+  production persistence, or release verification.
+
+**Rationale:** Explicit evidence protects financial correctness and prevents prototype
+behavior from being mistaken for a finished mobile application.
+
+### VI. Minimal Scope and Explicit Decisions
+
+- V1 MUST remain a manual personal-expense tracker with daily, weekly, and monthly
+  history, customizable categories, PKR-only money, and device-only storage.
+- V1 MUST NOT include income tracking, budgets, receipt scanning, bank integration,
+  multiple currencies, accounts, cloud synchronization, or manual backup and restore.
+  Income tracking is a future possibility, not an authorized V1 implementation task.
+- Technology stack and supported OS versions MUST receive explicit project-owner
+  approval before production scaffolding. Dependencies MUST have a documented need,
+  compatible licensing, and no conflict with offline privacy requirements.
+- Feature specifications MUST define acceptance criteria and exclusions before planning;
+  plans MUST justify complexity with the simplest rejected alternative. Monetary,
+  date-range, persistence, and presentation concerns MUST have separately testable
+  responsibilities without prescribing a framework or directory structure.
+- Proposed screen-document defaults, including field-length and amount limits, MUST NOT
+  be treated as approved requirements solely because the visual mockups were approved.
+  Resolve them in the feature specification before affected implementation begins.
+
+**Rationale:** Scope discipline preserves a small, trustworthy V1 without silently
+committing the project to a stack or adding unrelated financial features.
+
+## Product and Technical Constraints
+
+- Product scope is recorded in `docs/expense-tracker-summary.md`; approved screen
+  direction is recorded in
+  `docs/superpowers/specs/2026-11-03-expense-tracker-screens-design.md`.
+- The application MUST remain usable offline from first launch. No backend service,
+  cloud data store, authentication flow, or external API is required for V1.
+- The implementation plan MUST identify the approved stack, minimum Android/iOS versions,
+  device-local persistence mechanism, asset packaging, automatic backup/transfer policy,
+  and test tooling. Until approved, these decisions remain open rather than assumed.
+- Feature specifications MUST set measurable responsiveness and scale targets for the
+  expected local dataset. Measurements MUST identify the device class, dataset size,
+  and scenario; unmeasured performance claims are not acceptance evidence.
+- Prototype sample entries, fixed dates, browser-only state, and board layout MUST NOT
+  become production behavior. Real calendar dates and durable writes are mandatory.
+
+## Development Workflow and Quality Gates
+
+1. **Specify:** Capture user journeys, acceptance scenarios, exclusions, relevant failure
+   states, and unresolved defaults. Resolve blocking product questions before planning.
+2. **Plan:** Check every core principle before research and again after design. Record
+   compliance evidence or an explicitly authorized exception. Select a stack only after
+   approval; distinguish research from permission to scaffold.
+3. **Prepare tasks:** Include failing tests before behavioral implementation, local
+   persistence and migration work where applicable, and accessibility/offline checks.
+   Map tasks to user stories and concrete paths without assuming a server or endpoints.
+4. **Implement:** Use small, reviewable increments. Keep monetary/date rules independently
+   testable, preserve existing records, and never bypass failed checks or report them
+   as passing. Logs MUST comply with Principle I.
+5. **Review and release:** Verify acceptance scenarios, regression tests, offline behavior,
+   persistence after restart, and relevant accessibility states. Recheck constitution
+   compliance and disclose untested platform behavior. Release-blocking failures MUST
+   be resolved before release; no actual release is authorized by completing a plan.
+6. **Record decisions:** Record an architectural decision when selecting the stack,
+   persistence/migration approach, or another consequential hard-to-reverse design.
+   Keep specifications, plans, tasks, and runtime guidance aligned with amendments.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution is the project's highest internal engineering policy. Applicable law,
+security requirements, and explicit project-owner instructions still apply. If a proposed
+change conflicts with a principle, surface the conflict before implementation; do not
+silently reinterpret a principle to make the change pass.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+Amendments MUST identify the affected rules, rationale, migration or compatibility impact,
+and dependent documents. The project owner MUST approve the amendment. Update this file,
+its Sync Impact Report, affected templates and guidance, and `Last Amended` together;
+record the work in a constitution-stage Prompt History Record. `Ratified` remains the
+original adoption date, 2026-11-03.
+
+Use semantic versioning for this constitution, independently of application versions:
+
+- **MAJOR:** remove or redefine a principle incompatibly, or relax an existing mandatory
+  protection or V1 boundary.
+- **MINOR:** add a principle or materially expand compatible mandatory guidance.
+- **PATCH:** clarify wording or correct references without changing obligations.
+
+Version 1.0.0 is the first adoption; the prior file was an unversioned template.
+
+A time-limited exception MUST name its scope, reason, owner, expiry/review date, validation
+plan, and explicit project-owner approval in the implementation plan. An exception MUST
+NOT waive privacy, exact-money, data-preservation, or V1 scope protections; changing those
+requires an approved constitutional amendment. A complexity-tracking table alone is not
+approval and MUST NOT turn a failing gate into a passing gate.
+
+Every feature plan and review MUST record compliance with the six principles. Requirements
+or tasks that contradict this constitution MUST be corrected or escalated before affected
+work proceeds. Unchanged documents need no cosmetic edits; missing guidance MUST be
+reported rather than silently recreated without authorization.
+
+**Version**: 1.0.0 | **Ratified**: 2026-11-03 | **Last Amended**: 2026-11-03

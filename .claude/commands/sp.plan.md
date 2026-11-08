@@ -27,7 +27,8 @@ You **MUST** consider the user input before proceeding (if not empty).
 3. **Execute plan workflow**: Follow the structure in IMPL_PLAN template to:
    - Fill Technical Context (mark unknowns as "NEEDS CLARIFICATION")
    - Fill Constitution Check section from constitution
-   - Evaluate gates (ERROR if violations unjustified)
+   - Evaluate gates (ERROR on violations without a constitution-authorized exception;
+     complexity justification alone is not approval)
    - Phase 0: Generate research.md (resolve all NEEDS CLARIFICATION)
    - Phase 1: Generate data-model.md, contracts/, quickstart.md
    - Phase 1: Update agent context by running the agent script
@@ -69,10 +70,11 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Validation rules from requirements
    - State transitions if applicable
 
-2. **Generate API contracts** from functional requirements:
-   - For each user action → endpoint
-   - Use standard REST/GraphQL patterns
-   - Output OpenAPI/GraphQL schema to `/contracts/`
+2. **Generate local contracts** from functional requirements:
+   - Map user actions to domain/use-case inputs, outputs, validation, and failure states.
+   - Define device-local persistence boundaries and migration guarantees.
+   - Record these contracts in `/contracts/` without assuming REST, GraphQL, or a backend.
+   - V1 has no external API requirement; do not introduce endpoints or authentication.
 
 3. **Agent context update**:
    - Run `.specify/scripts/powershell/update-agent-context.ps1 -AgentType claude`

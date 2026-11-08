@@ -3,7 +3,9 @@
 **Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
 **Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
 
-**Note**: This template is filled in by the `/sp.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
+**Note**: This template is filled in by the `/sp.plan` command. See
+`.claude/commands/sp.plan.md` for the execution workflow and
+`.specify/memory/constitution.md` for the mandatory project gates.
 
 ## Summary
 
@@ -31,7 +33,30 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+Record PASS, BLOCKED, or an authorized exception with concrete evidence for every gate.
+No affected implementation starts while a gate is BLOCKED. Research may evaluate candidate
+stacks; it does not authorize production scaffolding.
+
+- **I. Offline-first privacy:** Core flows and assets work offline; data stays in private
+  device storage; no accounts, remote telemetry, or financial-data logs. Document Android
+  and iOS automatic backup/transfer controls and any platform limitations.
+- **II. Exact money and history:** PKR-only exact arithmetic, validated bounds/precision,
+  explicit local-date and week boundaries, and a shared record set for lists and totals.
+- **III. Durable storage:** Atomic writes, restart persistence, non-destructive errors,
+  category history preservation, confirmed deletion, tested migrations when applicable,
+  and accurate no-recovery messaging.
+- **IV. Accessible mobile interaction:** Approved screen direction, both themes, platform
+  touch targets, contrast, screen readers, text scaling, safe areas, reduced motion,
+  keyboard-open forms, and explicit discard behavior.
+- **V. Test-first verification:** Failing tests precede changed behavior; plan domain,
+  persistence, failure-path, and migration tests as relevant, plus Android/iOS offline
+  and interface verification. Identify tools, devices, and untested conditions.
+- **VI. Minimal scope and decisions:** No excluded V1 features or assumed backend. Record
+  project-owner approval of the stack and supported OS versions before scaffolding;
+  resolve feature defaults and justify dependencies and complexity.
+
+Repeat this checklist after Phase 1 design with links to the supporting plan sections.
+Complexity justification is not an exception approval; follow constitution Governance.
 
 ## Project Structure
 
@@ -83,12 +108,15 @@ frontend/
 │   └── services/
 └── tests/
 
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
+# [REMOVE IF UNUSED] Option 3: Offline mobile app (Android and iPhone; no V1 API)
+[approved-app-root]/
+├── [presentation: approved screens, navigation, accessible components]
+├── [domain: exact money, calendar ranges, category rules]
+├── [data: device-local storage and migrations]
+└── [tests: unit, persistence integration, and platform UI]
 
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+[platform-projects-if-required]/
+└── [Android/iOS configuration, backup/transfer controls, packaged assets]
 ```
 
 **Structure Decision**: [Document the selected structure and reference the real
@@ -96,7 +124,10 @@ directories captured above]
 
 ## Complexity Tracking
 
-> **Fill ONLY if Constitution Check has violations that must be justified**
+> **Fill only for proposed complexity or governance-authorized exceptions.**
+> Record approval, owner, expiry/review date, and validation for an exception. Mandatory
+> privacy, exact-money, data-preservation, and V1 scope rules require an amendment,
+> not a justification entry. Unapproved violations remain BLOCKED.
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|

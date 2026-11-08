@@ -228,11 +228,12 @@ When creating this spec from a user prompt:
 
 **Examples of reasonable defaults** (don't ask about these):
 
-- Data retention: Industry-standard practices for the domain
-- Performance targets: Standard web/mobile app expectations unless specified
-- Error handling: User-friendly messages with appropriate fallbacks
-- Authentication method: Standard session-based or OAuth2 for web apps
-- Integration patterns: RESTful APIs unless specified otherwise
+- Follow the constitution and approved product scope before applying generic defaults.
+- Data retention: Preserve local expense history; never infer automatic deletion or reset.
+- Performance: Define measurable local-data targets with device class and dataset size.
+- Error handling: Retain input and saved records; never disguise storage failure as empty data.
+- Authentication/integrations: None for V1; do not infer accounts, OAuth, REST APIs, or a backend.
+- Unapproved screen-document limits remain proposed until resolved in the specification.
 
 ### Success Criteria Guidelines
 

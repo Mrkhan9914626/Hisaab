@@ -1,0 +1,26 @@
+# Local review captures and agent scratch output
+.superpowers/
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.idea/
+.vscode/
+
+# Secrets and signing material
+.env
+.env.*
+*.jks
+*.keystore
+key.properties
+
+# Financial data and SQLite sidecars must never be committed
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.sqlite-journal

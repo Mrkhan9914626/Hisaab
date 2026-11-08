@@ -84,16 +84,42 @@
 
 ### Functional Requirements
 
-- **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
-- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]  
-- **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
-- **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
-- **FR-005**: System MUST [behavior, e.g., "log all security events"]
+- **FR-001**: System MUST [offline expense capability and acceptance condition]
+- **FR-002**: System MUST [PKR amount validation and exact calculation requirement]
+- **FR-003**: Users MUST be able to [history or category interaction and expected outcome]
+- **FR-004**: System MUST [device-local persistence and storage-failure requirement]
+- **FR-005**: System MUST [accessible feedback, confirmation, or navigation requirement]
 
 *Example of marking unclear requirements:*
 
-- **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
-- **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
+- **FR-006**: System MUST use [NEEDS CLARIFICATION: approved start day for weekly history]
+- **FR-007**: System MUST reject [NEEDS CLARIFICATION: maximum supported PKR amount]
+
+### Constitution Alignment *(mandatory)*
+
+Reference `.specify/memory/constitution.md`. Define testable requirements for each
+applicable rule and explain any genuinely inapplicable item; omission is not a waiver.
+
+- **Scope:** State V1 inclusions and exclusions. No accounts, cloud sync, income, budgets,
+  bank integration, receipt scanning, other currencies, or manual backup/restore.
+- **Privacy/offline:** Core journeys work offline from first launch; no remote financial
+  telemetry or sensitive logs. Address device-only backup/transfer behavior and assets.
+- **Correctness:** Specify exact PKR arithmetic, precision/bounds, date semantics, period
+  boundaries, week start, and consistent filtered totals and counts.
+- **Data safety:** Specify restart persistence, atomic mutations, migration preservation,
+  failed read/write behavior, category archive/restore and fallback behavior, deletion
+  confirmation, and first-use/Settings data-loss disclosure as relevant.
+- **Accessibility:** Cover themes, contrast, platform touch targets, screen readers,
+  large text, reduced motion, keyboard/safe areas, errors, and discard confirmation.
+- **Verification:** Link each acceptance scenario to planned failing-first automated
+  coverage or a defined platform inspection. Tests for changed behavior are mandatory.
+
+### Scope and Unresolved Decisions *(mandatory)*
+
+- Record what this feature does not implement.
+- Identify proposed screen-document defaults separately from approved requirements.
+- Resolve blocking field limits, date rules, and performance targets before affected work.
+- Do not infer an approved stack or minimum OS version from the HTML screen prototype.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -109,7 +135,9 @@
 
 ### Measurable Outcomes
 
-- **SC-001**: [Measurable metric, e.g., "Users can complete account creation in under 2 minutes"]
-- **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
-- **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
-- **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
+- **SC-001**: [Expense-entry completion target with a defined user journey]
+- **SC-002**: [History responsiveness target with device class and local dataset size]
+- **SC-003**: [Exact-total and restart-persistence outcomes for the acceptance dataset]
+- **SC-004**: [Offline Android/iPhone and accessibility acceptance conditions]
+
+Do not substitute browser-prototype checks for native persistence or platform evidence.
