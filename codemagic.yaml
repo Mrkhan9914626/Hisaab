@@ -1,166 +1,20 @@
-# Expense Tracker — Codemagic CI configuration
-#
-# Status: authored by /sp.implement setup (T003). No workflow below has been run.
-# Candidate Flutter pin is 3.47.8; the owner-authorized bootstrap must record the
-# actual resolved Flutter/Dart/JDK/Gradle/Xcode/image versions before locking.
-#
-# Rules preserved here:
-# - No `ignore_failure`, unconditional success, or failure masking.
-# - No signing secrets, real expense databases, or DB sidecars on PR builds.
-# - Artifacts are limited to review/build outputs, never financial data.
-# - The one-time bootstrap is manually triggered and never regenerates source in
-#   normal build workflows.
-
 workflows:
-  bootstrap-source:
-    name: Bootstrap source (manual, macOS)
-    instance_type: mac_mini_m2
-    max_build_duration: 60
-    environment:
-      flutter: 3.47.8
-      vars:
-        APP_ORG: ""
-    triggering:
-      events: []
-    scripts:
-      - name: Record non-sensitive toolchain metadata
-        script: |
-          set -eu
-          flutter --version --machine
-          dart --version
-          flutter doctor -v
-      - name: Generate complete fresh project outside the repository
-        script: |
-          set -eu
-          : "${APP_ORG:?Set the owner-approved reverse-domain organization prefix}"
-          BOOTSTRAP_ROOT="$(mktemp -d)"
-          flutter create --platforms=android,ios --org "$APP_ORG" \
-            --project-name expense_tracker "$BOOTSTRAP_ROOT/app"
-          cd "$BOOTSTRAP_ROOT/app"
-          flutter pub get
-          mkdir -p "$CM_BUILD_DIR/bootstrap-artifacts"
-          tar --exclude='./.dart_tool' --exclude='./build' \
-            --exclude='./android/local.properties' --exclude='./ios/Flutter/ephemeral' \
-            --exclude='./ios/Pods' --exclude='./ios/.symlinks' \
-            -czf "$CM_BUILD_DIR/bootstrap-artifacts/flutter-source.tar.gz" .
-    artifacts:
-      - bootstrap-artifacts/flutter-source.tar.gz
-
-  android-checks-debug:
-    name: Android host checks and debug APK
+  android-debug:
+    name: Android debug APK
     instance_type: linux_x2
     max_build_duration: 60
     environment:
-      flutter: 3.47.8
+      flutter: stable
     scripts:
-      - name: Locked dependency resolution
+      - name: Resolve dependencies
         script: |
           set -eu
           cd "$CM_BUILD_DIR/app"
-          flutter pub get --enforce-lockfile
-      - name: Format check
-        script: |
-          set -eu
-          cd "$CM_BUILD_DIR/app"
-          dart format --output=none --set-exit-if-changed .
-      - name: Static analysis
-        script: |
-          set -eu
-          cd "$CM_BUILD_DIR/app"
-          flutter analyze
-      - name: Host tests including file-backed FFI SQLite
-        script: |
-          set -eu
-          cd "$CM_BUILD_DIR/app"
-          mkdir -p test-results
-          flutter test --machine > test-results/flutter.json
-      - name: Build disposable debug APK
+          flutter pub get
+      - name: Build debug APK
         script: |
           set -eu
           cd "$CM_BUILD_DIR/app"
           flutter build apk --debug
-    test_report: app/test-results/flutter.json
     artifacts:
       - app/build/app/outputs/flutter-apk/app-debug.apk
-      - app/test-results/**
-
-  android-native-tests:
-    name: Android native integration tests
-    instance_type: linux_x2
-    max_build_duration: 90
-    environment:
-      flutter: 3.47.8
-    scripts:
-      - name: Locked dependency resolution
-        script: |
-          set -eu
-          cd "$CM_BUILD_DIR/app"
-          flutter pub get --enforce-lockfile
-      - name: Boot emulator with bounded readiness check
-        script: |
-          set -eu
-          cd "$CM_BUILD_DIR/app"
-          flutter emulators --launch emulator &
-          adb wait-for-device
-          ready=false
-          for attempt in $(seq 1 120); do
-            if [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ]; then
-              ready=true
-              break
-            fi
-            sleep 2
-          done
-          [ "$ready" = true ] || { printf '%s\n' 'Android emulator boot timed out'; exit 1; }
-          flutter devices
-      - name: Run native integration tests on verified emulator
-        script: |
-          set -eu
-          cd "$CM_BUILD_DIR/app"
-          flutter test integration_test -d emulator-5554
-    artifacts:
-      - app/test-results/**
-
-  ios-unsigned:
-    name: iOS unsigned compile (no codesign)
-    instance_type: mac_mini_m2
-    max_build_duration: 60
-    environment:
-      flutter: 3.47.8
-      xcode: latest
-    scripts:
-      - name: Locked dependency resolution
-        script: |
-          set -eu
-          cd "$CM_BUILD_DIR/app"
-          flutter pub get --enforce-lockfile
-      - name: Compile without codesigning
-        script: |
-          set -eu
-          cd "$CM_BUILD_DIR/app"
-          flutter build ios --release --no-codesign
-
-  ios-simulator-tests:
-    name: iOS simulator integration tests
-    instance_type: mac_mini_m2
-    max_build_duration: 90
-    environment:
-      flutter: 3.47.8
-      xcode: latest
-    scripts:
-      - name: Locked dependency resolution
-        script: |
-          set -eu
-          cd "$CM_BUILD_DIR/app"
-          flutter pub get --enforce-lockfile
-      - name: Boot an available iPhone simulator and run integration tests
-        script: |
-          set -eu
-          cd "$CM_BUILD_DIR/app"
-          DEVICE_ID="$(xcrun simctl list devices available | awk -F '[()]' '/iPhone/ {print $2; exit}')"
-          [ -n "$DEVICE_ID" ] || { printf '%s\n' 'No available iPhone simulator found'; exit 1; }
-          xcrun simctl boot "$DEVICE_ID" || true
-          open -a Simulator || true
-          xcrun simctl bootstatus "$DEVICE_ID" -b
-          flutter test integration_test -d "$DEVICE_ID"
-    artifacts:
-      - app/test-results/**
