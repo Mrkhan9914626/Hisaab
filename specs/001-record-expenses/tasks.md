@@ -13,6 +13,18 @@ task may claim results that were not actually observed.
 **Organization**: Tasks are grouped by user story so each story can be implemented and tested
 independently. All four user stories are P1; US1 is delivered first as the MVP.
 
+**Implementation status (2026-11-09)**: Production Dart source, host/integration test
+artifacts, hand-authored Android/iOS platform source and native storage-policy bridges are
+present for Phases 2–6. No `flutter pub get`, formatter, analyzer, test, build, native
+inspection or cloud lane has executed because no local Flutter/Dart/Android/iOS SDK exists.
+Test tasks and every verification/evidence task remain unchecked; no pass, red/green or build
+result is claimed. T004 cloud bootstrap and T005 lockfile/toolchain resolution remain blocked.
+The platform package identifiers are provisional `com.example.*` values until the owner supplies
+the permanent `APP_ORG`; wrapper binaries (`gradle-wrapper.jar`), generated Flutter configs,
+Pods and native build evidence are still SDK/cloud-produced. T078's quarantine, writer fence,
+finite recovery and matching-row reconciliation are implemented in source, but its native
+feasibility gate (T081) still requires real-plugin evidence.
+
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel (different files, no dependency on incomplete tasks)
@@ -38,7 +50,7 @@ application behavior; SDK-generated scaffold alone is never counted as feature e
 - [X] T003 Create root `codemagic.yaml` with workflows `bootstrap-source` (manual macOS), `android-checks-debug` (Linux), `android-native-tests`, `ios-unsigned`, `ios-simulator-tests`; no `ignore_failure`, bounded emulator boot, restricted artifacts, no signing secrets or DB files on PR builds.
 - [ ] T004 Run owner-authorized `bootstrap-source` with the permanent `APP_ORG` (requires cloud account, GitHub remote and push approval), download the restricted `flutter-source.tar.gz`, inspect it, and merge generated `app/android/`, `app/ios/`, `app/pubspec.yaml` and ignore files into `app/` without overwriting feature code or specs per `quickstart.md` §2.
 - [ ] T005 Configure `app/pubspec.yaml` with pinned `sqflite 2.4.5`, `characters 1.4.1`, `uuid 4.6.0`, dev-only `sqflite_common_ffi 2.4.5`, `flutter_test` and `integration_test`; resolve and review `app/pubspec.lock`; record resolved Dart/Flutter pair, licenses and JDK/Gradle/Xcode/image versions in `docs/build-toolchain.md`.
-- [ ] T006 Enforce Android `minSdk 24` and iOS deployment target `15.0` in `app/android/app/build.gradle(.kts)` and `app/ios/Podfile`/Runner project settings; verify both platform projects build configuration references the approved floors.
+- [X] T006 Enforce Android `minSdk 24` and iOS deployment target `15.0` in `app/android/app/build.gradle(.kts)` and `app/ios/Podfile`/Runner project settings; verify both platform projects build configuration references the approved floors.
 - [X] T007 [P] Configure `app/analysis_options.yaml` (lints, no warnings-as-hidden), formatter compliance and `.gitignore` rules for `app/test-results/`, build caches, `android/local.properties`, signing files and DB artifacts.
 
 **Checkpoint**: Reproducible source and cloud lanes exist. No behavior has been claimed.
@@ -55,32 +67,32 @@ and presentation foundations required by every user story.
 ### Domain and failure primitives
 
 - [ ] T008 [P] Write failing tests for sealed `Result<T>`, `AppFailure` codes and `RetryKind` (ordinary vs reconciliation) in `app/test/domain/app_failure_test.dart`.
-- [ ] T009 Implement `Result`/`Success`/`Failure`, `AppFailure` (`storageUnavailable`, `initializationFailed`, `incompatibleStore`, `integrityFailure`, `calculationOverflow`, `outcomeUnavailable`, `privacyPolicyUnavailable`) and `RetryKind` in `app/lib/core/domain/app_failure.dart` (no raw SQL, payload or field contents in failures).
+- [X] T009 Implement `Result`/`Success`/`Failure`, `AppFailure` (`storageUnavailable`, `initializationFailed`, `incompatibleStore`, `integrityFailure`, `calculationOverflow`, `outcomeUnavailable`, `privacyPolicyUnavailable`) and `RetryKind` in `app/lib/core/domain/app_failure.dart` (no raw SQL, payload or field contents in failures).
 - [ ] T010 [P] Write failing Money tests in `app/test/domain/money_test.dart`: `1..99999999900` paisa bounds; outer-whitespace trim; digits plus optional period and 1–2 fraction digits; reject blank/zero/negative/sign/grouping/exponent/currency/incomplete/multiple-dot/`1.001`; reject above max; accept `0.01` and `999999999.00` exactly; format `PKR 1,234.50`; never use `double`.
-- [ ] T011 Implement exact `Money` parsing/comparison (BigInt or normalized digit strings before int conversion) and integer-only formatting in `app/lib/core/domain/money.dart`.
+- [X] T011 Implement exact `Money` parsing/comparison (BigInt or normalized digit strings before int conversion) and integer-only formatting in `app/lib/core/domain/money.dart`.
 - [ ] T012 [P] Write failing `LocalDate` tests in `app/test/domain/local_date_test.dart`: Gregorian leap days, invalid `2023-02-29`, year `0001-01-01`/`9999-12-31`, canonical `YYYY-MM-DD`, today/month inclusive-first/exclusive-next boundaries, civil comparison not UTC, and the `9999-12` end predicate.
-- [ ] T013 Implement validated `LocalDate` (no normalization of invalid dates, no duration-based month math) in `app/lib/core/domain/local_date.dart`.
+- [X] T013 Implement validated `LocalDate` (no normalization of invalid dates, no duration-based month math) in `app/lib/core/domain/local_date.dart`.
 - [ ] T014 [P] Write failing entity tests in `app/test/domain/entities_test.dart` for `Category`, `Expense`, `ExpenseId`, `Note` and `ImmutableSubmission`: stable IDs, 200/201 grapheme boundary (ZWJ, flags, skin tones, composed/decomposed, line breaks), blank→NULL, nonblank preservation, frozen submission identity, and identity not derived from fields.
-- [ ] T015 Implement `Category`/`Expense` in `app/lib/features/record_expenses/domain/category.dart` and `expense.dart`; `ExpenseId`/`Note`/`ImmutableSubmission` in `submission.dart`; `OverviewSnapshot` in `overview_snapshot.dart`.
+- [X] T015 Implement `Category`/`Expense` in `app/lib/features/record_expenses/domain/category.dart` and `expense.dart`; `ExpenseId`/`Note`/`ImmutableSubmission` in `submission.dart`; `OverviewSnapshot` in `overview_snapshot.dart`.
 - [ ] T016 [P] Write failing `EntryValidator` tests in `app/test/domain/entry_validator_test.dart`: accepted/rejected amount boundaries, explicit active category required, tomorrow rejected at submission, yesterday accepted, note 200 accepted/201 rejected, and field-error map with preserved input.
-- [ ] T017 Implement pure `EntryValidator.validate(EntryDraft, LocalDate, List<Category>)` in `app/lib/features/record_expenses/domain/entry_validator.dart` and draft/validation types in `entry_draft.dart`.
+- [X] T017 Implement pure `EntryValidator.validate(EntryDraft, LocalDate, List<Category>)` in `app/lib/features/record_expenses/domain/entry_validator.dart` and draft/validation types in `entry_draft.dart`.
 
 ### Storage and repository foundation
 
-- [ ] T018 [P] Create the host SQLite test harness in `app/test/support/test_database_factory.dart` (file-backed `sqflite_common_ffi`, injected factory) and synthetic fixture builders in `app/test/support/synthetic_fixtures.dart`; no real device data or DB file is copied into tests or CI.
+- [X] T018 [P] Create the host SQLite test harness in `app/test/support/test_database_factory.dart` (file-backed `sqflite_common_ffi`, injected factory) and synthetic fixture builders in `app/test/support/synthetic_fixtures.dart`; no real device data or DB file is copied into tests or CI.
 - [ ] T019 [P] Write failing storage-policy contract tests in `app/test/data/local_storage_policy_test.dart`: only a verified private directory is accepted, Dart appends the constant filename, and any failure yields `privacyPolicyUnavailable` with no cache/shared/network fallback.
-- [ ] T020 Implement the Dart `LocalStoragePolicy` contract, method-channel client and injectable fake in `app/lib/core/storage/local_storage_policy.dart`.
-- [ ] T021 Implement the Android storage bridge in the generated `app/android/app/src/main/kotlin/**/MainActivity.kt` (plus package files) returning `context.noBackupFilesDir` after verification, with a native failure when unavailable; register it before SQLite opens.
-- [ ] T022 Implement the iOS storage bridge in `app/ios/Runner/StoragePolicyBridge.swift` and `app/ios/Runner/AppDelegate.swift`: protected Application Support child directory, `isExcludedFromBackup` set and verified before first write, failure rather than Documents fallback.
+- [X] T020 Implement the Dart `LocalStoragePolicy` contract, method-channel client and injectable fake in `app/lib/core/storage/local_storage_policy.dart`.
+- [X] T021 Implement the Android storage bridge in the generated `app/android/app/src/main/kotlin/**/MainActivity.kt` (plus package files) returning `context.noBackupFilesDir` after verification, with a native failure when unavailable; register it before SQLite opens.
+- [X] T022 Implement the iOS storage bridge in `app/ios/Runner/StoragePolicyBridge.swift` and `app/ios/Runner/AppDelegate.swift`: protected Application Support child directory, `isExcludedFromBackup` set and verified before first write, failure rather than Documents fallback.
 - [ ] T023 [P] Write failing schema tests in `app/test/data/schema_test.dart`: atomic creation, `user_version=1`, effective `foreign_keys=ON`/`journal_mode=DELETE`/`synchronous=EXTRA`, six seed categories exactly once, Other protected/active/name trigger, amount storage-class/bounds checks, active-category insert trigger, RESTRICT foreign key, and reopen without reseed.
-- [ ] T024 Implement `AppDatabase` factory configuration, schema v1 creation, triggers/indexes and transactional seeding in `app/lib/core/storage/app_database.dart` and `migrations.dart`; no destructive reset, `REPLACE`, or journal changes inside transactions.
+- [X] T024 Implement `AppDatabase` factory configuration, schema v1 creation, triggers/indexes and transactional seeding in `app/lib/core/storage/app_database.dart` and `migrations.dart`; no destructive reset, `REPLACE`, or journal changes inside transactions.
 - [ ] T025 [P] Write failing initialization/category tests in `app/test/data/initialize_test.dart`: confirmed empty store succeeds, seed/creation failure rolls back, missing Other or empty active set is `integrityFailure`, newer schema is `incompatibleStore`, corrupt/existing invalid file is an error with no reset/reseed, and archived fixtures remain readable but excluded from active choices.
-- [ ] T026 Implement `ExpenseRepository.initialize()` and `listActiveCategories()` with injectable `DatabaseFactory` and typed failures in `app/lib/features/record_expenses/data/expense_repository.dart`.
+- [X] T026 Implement `ExpenseRepository.initialize()` and `listActiveCategories()` with injectable `DatabaseFactory` and typed failures in `app/lib/features/record_expenses/data/expense_repository.dart`.
 
 ### Presentation foundation
 
 - [ ] T027 [P] Write failing theme/token tests in `app/test/presentation/app_theme_test.dart` for light/dark tokens, 4.5:1 normal / 3:1 large / 3:1 non-text contrast, and 44-pt iOS / 48-dp Android minimum target tokens.
-- [ ] T028 Implement `app/lib/core/presentation/app_theme.dart` with explicit light/dark tokens, system theme selection, bundled Material icons and system font fallback; no remote assets.
+- [X] T028 Implement `app/lib/core/presentation/app_theme.dart` with explicit light/dark tokens, system theme selection, bundled Material icons and system font fallback; no remote assets.
 - [ ] T029 [P] Write failing money-display tests in `app/test/presentation/money_text_test.dart` (grouping, two decimals, long totals, no floating formatting) and implement `app/lib/core/presentation/money_text.dart`.
 
 **Checkpoint**: Foundation ready — exact values, protected schema, repository initialization and
@@ -107,13 +119,13 @@ retry. Controlled earlier records may be supplied as synthetic fixtures.
 
 ### Implementation for User Story 1
 
-- [ ] T034 [US1] Implement `ExpenseRepository.createExpense(ImmutableSubmission)` as one awaited transaction with explicit INSERT, same-ID payload comparison, typed `integrityFailure`, active-category recheck and exact integer/date/note values in `app/lib/features/record_expenses/data/expense_repository.dart` (depends on T024, T026).
-- [ ] T035 [US1] Implement the one-app-wide `SaveCoordinator.begin()` registry, immutable submission handling and `SaveOutcome`/`SaveProgress` happy path in `app/lib/features/record_expenses/application/save_coordinator.dart`; success emitted only after the commit is observed.
-- [ ] T036 [US1] Implement `EntryController` form state, fresh defaults (today, no category, no stale carry-over), submission freeze with `uuid` and post-save Overview refresh trigger in `app/lib/features/record_expenses/application/entry_controller.dart`.
-- [ ] T037 [US1] Implement the minimal Add expense screen with labeled amount/category/date/note fields, Save and Back/Cancel in `app/lib/features/record_expenses/presentation/add_expense_screen.dart`; suppress double taps without hiding feedback and keep layout stable.
-- [ ] T038 [US1] Implement the minimal populated Overview view (today's rows newest-saved-first, exact count/total, month total) and refresh-after-save in `app/lib/features/record_expenses/presentation/overview_screen.dart` and `application/overview_controller.dart`; do not yet implement US2 empty/stale states.
-- [ ] T039 [US1] Wire `main.dart`/`app.dart` dependency injection and the working Overview and Add routes only; defer the read-only Details route entirely to T051 so no placeholder or inert route is exposed. Use constructor-injected repository/coordinator and provide no inert History/Categories/Settings/Edit/Delete controls in `app/lib/main.dart` and `app/lib/app.dart`; FR-022's three working routes are complete only after T051.
-- [ ] T040 [US1] Announce persisted success including the saved civil date and reflect exactly one row in affected summaries; keep a post-save refresh failure separate from write success in `entry_controller.dart` and `overview_controller.dart`.
+- [X] T034 [US1] Implement `ExpenseRepository.createExpense(ImmutableSubmission)` as one awaited transaction with explicit INSERT, same-ID payload comparison, typed `integrityFailure`, active-category recheck and exact integer/date/note values in `app/lib/features/record_expenses/data/expense_repository.dart` (depends on T024, T026).
+- [X] T035 [US1] Implement the one-app-wide `SaveCoordinator.begin()` registry, immutable submission handling and `SaveOutcome`/`SaveProgress` happy path in `app/lib/features/record_expenses/application/save_coordinator.dart`; success emitted only after the commit is observed.
+- [X] T036 [US1] Implement `EntryController` form state, fresh defaults (today, no category, no stale carry-over), submission freeze with `uuid` and post-save Overview refresh trigger in `app/lib/features/record_expenses/application/entry_controller.dart`.
+- [X] T037 [US1] Implement the minimal Add expense screen with labeled amount/category/date/note fields, Save and Back/Cancel in `app/lib/features/record_expenses/presentation/add_expense_screen.dart`; suppress double taps without hiding feedback and keep layout stable.
+- [X] T038 [US1] Implement the minimal populated Overview view (today's rows newest-saved-first, exact count/total, month total) and refresh-after-save in `app/lib/features/record_expenses/presentation/overview_screen.dart` and `application/overview_controller.dart`; do not yet implement US2 empty/stale states.
+- [X] T039 [US1] Wire `main.dart`/`app.dart` dependency injection and the working Overview and Add routes only; defer the read-only Details route entirely to T051 so no placeholder or inert route is exposed. Use constructor-injected repository/coordinator and provide no inert History/Categories/Settings/Edit/Delete controls in `app/lib/main.dart` and `app/lib/app.dart`; FR-022's three working routes are complete only after T051.
+- [X] T040 [US1] Announce persisted success including the saved civil date and reflect exactly one row in affected summaries; keep a post-save refresh failure separate from write success in `entry_controller.dart` and `overview_controller.dart`.
 - [ ] T041 [US1] Run the owner-authorized `android-checks-debug` and relevant integration lane at the US1 commit; retain assertion-level red/green evidence, commit ID and build URL under `docs/verification/001-record-expenses/us1.md` without claiming skipped checks.
 
 **Checkpoint**: US1 is functional and independently testable. MVP ready for validation.
@@ -139,11 +151,11 @@ the known fixture. No History, edit or category-management interface is required
 
 ### Implementation for User Story 2
 
-- [ ] T047 [US2] Implement `ExpenseRepository.loadOverview(LocalDate today)` as one serialized read transaction returning today rows, derived count/total, exact integer month sum, `hasAnyExpenses` and typed overflow failure in `app/lib/features/record_expenses/data/expense_repository.dart` (depends on T034).
-- [ ] T048 [US2] Implement `ExpenseRepository.loadExpense(ExpenseId)` with joined category metadata and typed not-found/integrity failures in `expense_repository.dart`.
-- [ ] T049 [US2] Implement `OverviewController` states (`loading`, `emptyEver`, `emptyToday`, `available`, `unavailable`, `stale`), retained-snapshot marking and refresh on entry/resume/day-month rollover in `app/lib/features/record_expenses/application/overview_controller.dart`.
-- [ ] T050 [US2] Implement Overview UI states, today's full list (newest first), count/total/month total, empty-ever vs empty-today copy and unavailable/stale error with Retry in `app/lib/features/record_expenses/presentation/overview_screen.dart`; keep a post-save refresh failure distinct from save success.
-- [ ] T051 [US2] Implement the read-only `expense_details_screen.dart` route from a today-row and register/wire it in `app/lib/main.dart`/`app.dart`: amount, category icon/name, civil date, note/No note added, device-only reminder and Back; no edit/delete controls.
+- [X] T047 [US2] Implement `ExpenseRepository.loadOverview(LocalDate today)` as one serialized read transaction returning today rows, derived count/total, exact integer month sum, `hasAnyExpenses` and typed overflow failure in `app/lib/features/record_expenses/data/expense_repository.dart` (depends on T034).
+- [X] T048 [US2] Implement `ExpenseRepository.loadExpense(ExpenseId)` with joined category metadata and typed not-found/integrity failures in `expense_repository.dart`.
+- [X] T049 [US2] Implement `OverviewController` states (`loading`, `emptyEver`, `emptyToday`, `available`, `unavailable`, `stale`), retained-snapshot marking and refresh on entry/resume/day-month rollover in `app/lib/features/record_expenses/application/overview_controller.dart`.
+- [X] T050 [US2] Implement Overview UI states, today's full list (newest first), count/total/month total, empty-ever vs empty-today copy and unavailable/stale error with Retry in `app/lib/features/record_expenses/presentation/overview_screen.dart`; keep a post-save refresh failure distinct from save success.
+- [X] T051 [US2] Implement the read-only `expense_details_screen.dart` route from a today-row and register/wire it in `app/lib/main.dart`/`app.dart`: amount, category icon/name, civil date, note/No note added, device-only reminder and Back; no edit/delete controls.
 - [ ] T052 [US2] Verify one consistent formatting/ordering source across Overview rows, today totals and details (exact `Money` formatting, `save_sequence` order) and add/extend regressions in `app/test/data/overview_test.dart` and `app/test/presentation/details_test.dart`.
 - [ ] T053 [US2] Run the owner-authorized host and native lanes at the US2 commit; retain assertion-level red/green evidence and build URLs in `docs/verification/001-record-expenses/us2.md`.
 
@@ -172,12 +184,12 @@ financial file is copied by platform backup/device transfer.
 
 ### Implementation for User Story 3
 
-- [ ] T061 [US3] Implement the first-use Overview disclosure and `No expenses yet` explanation with `Add your first expense` in `app/lib/features/record_expenses/presentation/overview_screen.dart` (depends on T050).
-- [ ] T062 [US3] Implement the shared device-only reminder/no-account/no-sync/no-backup/no-recovery copy component in `app/lib/core/presentation/storage_notice.dart` and apply it on Overview and details.
-- [ ] T063 [US3] Enforce and expose category seed/active/protected/archived invariants in `app/lib/core/storage/app_database.dart` and `app/lib/features/record_expenses/data/expense_repository.dart`; ensure initialization failure surfaces `initializationFailed` without reseeding (depends on T024, T026).
-- [ ] T064 [US3] Implement Android backup protections in `app/android/app/src/main/AndroidManifest.xml`, `app/android/app/src/main/res/xml/backup_rules.xml` and `data_extraction_rules.xml`; keep `noBackupFilesDir` as the only financial location and ensure no runtime INTERNET permission.
-- [ ] T065 [US3] Implement iOS backup exclusion/file-protection configuration in `app/ios/Runner/StoragePolicyBridge.swift`, `app/ios/Runner/Info.plist` and Runner entitlements; no iCloud container, document sharing or open-in-place export.
-- [ ] T066 [US3] Remove/deny any remote asset, font, analytics or network dependency introduced by scaffolding; confirm packaged Material icons/system fallback in `app/pubspec.yaml`, `app/lib/core/presentation/app_theme.dart` and platform manifests.
+- [X] T061 [US3] Implement the first-use Overview disclosure and `No expenses yet` explanation with `Add your first expense` in `app/lib/features/record_expenses/presentation/overview_screen.dart` (depends on T050).
+- [X] T062 [US3] Implement the shared device-only reminder/no-account/no-sync/no-backup/no-recovery copy component in `app/lib/core/presentation/storage_notice.dart` and apply it on Overview and details.
+- [X] T063 [US3] Enforce and expose category seed/active/protected/archived invariants in `app/lib/core/storage/app_database.dart` and `app/lib/features/record_expenses/data/expense_repository.dart`; ensure initialization failure surfaces `initializationFailed` without reseeding (depends on T024, T026).
+- [X] T064 [US3] Implement Android backup protections in `app/android/app/src/main/AndroidManifest.xml`, `app/android/app/src/main/res/xml/backup_rules.xml` and `data_extraction_rules.xml`; keep `noBackupFilesDir` as the only financial location and ensure no runtime INTERNET permission.
+- [X] T065 [US3] Implement iOS backup exclusion/file-protection configuration in `app/ios/Runner/StoragePolicyBridge.swift`, `app/ios/Runner/Info.plist` and Runner entitlements; no iCloud container, document sharing or open-in-place export.
+- [X] T066 [US3] Remove/deny any remote asset, font, analytics or network dependency introduced by scaffolding; confirm packaged Material icons/system fallback in `app/pubspec.yaml`, `app/lib/core/presentation/app_theme.dart` and platform manifests.
 - [ ] T067 [US3] Run the owner-authorized native storage/policy lanes and retain red/green evidence, actual device/simulator identity and inspection links in `docs/verification/001-record-expenses/us3.md`; any unresolved off-device path stays release-blocking.
 
 **Checkpoint**: First use, categories and device-only disclosures are truthful and testable.
@@ -205,12 +217,12 @@ cancellation results, including after reopen.
 
 ### Implementation for User Story 4
 
-- [ ] T075 [US4] Implement field-level validation presentation, first-invalid focus, linked multi-error summary and full value retention in `app/lib/features/record_expenses/application/entry_controller.dart` and `presentation/add_expense_screen.dart` (depends on T017, T036).
-- [ ] T076 [US4] Implement `discard_dialog.dart` and `EntryController.requestLeave()` with initial-value equality, safe `Keep editing` focus, focus trap/restore and system-back/gesture handling; while a save is pending delegate to cancellation (depends on T036).
-- [ ] T077 [US4] Implement cooperative cancellation in `SaveCoordinator`: cancellation checkpoints before insert and synchronously before normal return, dedicated rollback exception, no unawaited SQL, queued retirement, immutable identity retention and typed outcomes in `app/lib/features/record_expenses/application/save_coordinator.dart`.
-- [ ] T078 [US4] Implement uncertain-connection quarantine, drain-original-work, clean-boundary recovery, writer fence, matching-row reconciliation and finite retry/exhaustion handling in `save_coordinator.dart` plus adapter support in `app/lib/core/storage/app_database.dart`; never settle on timeout/route disposal and never delete to emulate cancellation.
-- [ ] T079 [US4] Implement pending-save Back/Cancel UX: offer cancellation, show queued/writing/cancelling/checkingOutcome status without layout shift, disable duplicate submission while uncertain, and provide reconciliation Retry on failure in `presentation/add_expense_screen.dart` and `entry_controller.dart`.
-- [ ] T080 [US4] Implement write/init/read/refresh failure UI with actionable Retry and no false empty/success: preserve form input, mark retained snapshots stale, offer Retry/Back on details, and separate post-save refresh failure from Saved in `overview_screen.dart`, `expense_details_screen.dart`, `overview_controller.dart` and `add_expense_screen.dart`.
+- [X] T075 [US4] Implement field-level validation presentation, first-invalid focus, linked multi-error summary and full value retention in `app/lib/features/record_expenses/application/entry_controller.dart` and `presentation/add_expense_screen.dart` (depends on T017, T036).
+- [X] T076 [US4] Implement `discard_dialog.dart` and `EntryController.requestLeave()` with initial-value equality, safe `Keep editing` focus, focus trap/restore and system-back/gesture handling; while a save is pending delegate to cancellation (depends on T036).
+- [X] T077 [US4] Implement cooperative cancellation in `SaveCoordinator`: cancellation checkpoints before insert and synchronously before normal return, dedicated rollback exception, no unawaited SQL, queued retirement, immutable identity retention and typed outcomes in `app/lib/features/record_expenses/application/save_coordinator.dart`.
+- [X] T078 [US4] Implement uncertain-connection quarantine, drain-original-work, clean-boundary recovery, writer fence, matching-row reconciliation and finite retry/exhaustion handling in `save_coordinator.dart` plus adapter support in `app/lib/core/storage/app_database.dart`; never settle on timeout/route disposal and never delete to emulate cancellation.
+- [X] T079 [US4] Implement pending-save Back/Cancel UX: offer cancellation, show queued/writing/cancelling/checkingOutcome status without layout shift, disable duplicate submission while uncertain, and provide reconciliation Retry on failure in `presentation/add_expense_screen.dart` and `entry_controller.dart`.
+- [X] T080 [US4] Implement write/init/read/refresh failure UI with actionable Retry and no false empty/success: preserve form input, mark retained snapshots stale, offer Retry/Back on details, and separate post-save refresh failure from Saved in `overview_screen.dart`, `expense_details_screen.dart`, `overview_controller.dart` and `add_expense_screen.dart`.
 - [ ] T081 [US4] Verify the native cancellation/recovery feasibility gate on the locked sqflite plugin; if a clean boundary cannot be demonstrated, keep `outcomeUnavailable`, block acceptance and record the adapter review in `docs/verification/001-record-expenses/cancellation-gate.md` rather than claiming success.
 - [ ] T082 [US4] Run the owner-authorized host/native lanes at the US4 commit and retain assertion-level red/green evidence, actual device identity and skipped-check disclosures in `docs/verification/001-record-expenses/us4.md`.
 
