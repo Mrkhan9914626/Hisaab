@@ -19,7 +19,7 @@ workflows:
     environment:
       flutter: 3.47.8
       vars:
-        APP_ORG: ""
+        APP_ORG: "io.github.mrkhan9914626"
     triggering:
       events: []
     scripts:
