@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' hide Category;
 import 'package:uuid/uuid.dart';
 
 import '../../../core/domain/app_failure.dart';
