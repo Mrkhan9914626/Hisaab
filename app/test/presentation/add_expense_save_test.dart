@@ -4,6 +4,7 @@ import 'package:expense_tracker/core/domain/local_date.dart';
 import 'package:expense_tracker/core/presentation/app_theme.dart';
 import 'package:expense_tracker/features/record_expenses/application/save_coordinator.dart';
 import 'package:expense_tracker/features/record_expenses/data/expense_repository.dart';
+import 'package:expense_tracker/features/record_expenses/domain/expense.dart';
 import 'package:expense_tracker/features/record_expenses/presentation/add_expense_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -26,9 +27,9 @@ void main() {
     directory.deleteSync(recursive: true);
   });
 
-  testWidgets('a valid save persists one expense and returns true',
+  testWidgets('a valid save persists one expense and returns the expense',
       (tester) async {
-    bool? popResult;
+    Expense? popResult;
 
     await tester.pumpWidget(
       MaterialApp(
@@ -38,8 +39,8 @@ void main() {
             body: Center(
               child: TextButton(
                 onPressed: () async {
-                  popResult = await Navigator.of(context).push<bool>(
-                    MaterialPageRoute<bool>(
+                  popResult = await Navigator.of(context).push<Expense>(
+                    MaterialPageRoute<Expense>(
                       builder: (context) => AddExpenseScreen(
                         repository: repository,
                         coordinator: coordinator,
@@ -67,7 +68,8 @@ void main() {
     await tester.tap(find.text('Save expense'));
     await tester.pumpAndSettle();
 
-    expect(popResult, isTrue);
+    expect(popResult, isNotNull);
+    expect(popResult!.amount.minorUnits, 65025);
     final snapshot =
         (await repository.loadOverview(LocalDate.today())).valueOrNull!;
     expect(snapshot.todayCount, 1);
@@ -87,8 +89,8 @@ void main() {
             body: Center(
               child: TextButton(
                 onPressed: () async {
-                  await Navigator.of(context).push<bool>(
-                    MaterialPageRoute<bool>(
+                  await Navigator.of(context).push<Expense>(
+                    MaterialPageRoute<Expense>(
                       builder: (context) => AddExpenseScreen(
                         repository: repository,
                         coordinator: coordinator,

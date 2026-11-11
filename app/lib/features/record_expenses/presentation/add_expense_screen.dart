@@ -16,10 +16,12 @@ class AddExpenseScreen extends StatefulWidget {
     super.key,
     required this.repository,
     required this.coordinator,
+    this.initialDate,
   });
 
   final ExpenseRepository repository;
   final SaveCoordinator coordinator;
+  final LocalDate? initialDate;
 
   @override
   State<AddExpenseScreen> createState() => _AddExpenseScreenState();
@@ -44,6 +46,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     _controller = EntryController(
       repository: widget.repository,
       coordinator: widget.coordinator,
+      initialDate: widget.initialDate,
     );
     _controller.addListener(_onChanged);
     unawaited(_controller.loadCategories());
@@ -144,9 +147,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(message)),
         );
-        Navigator.of(context).pop(true);
+        Navigator.of(context).pop(expense);
       case Cancelled():
-        Navigator.of(context).pop(false);
+        Navigator.of(context).pop(null);
       case KnownUnsaved(:final failure):
         setState(() {
           _banner = failure.userMessage;
@@ -191,11 +194,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     final decision = _controller.requestLeave();
     switch (decision) {
       case LeaveImmediately():
-        Navigator.of(context).pop(_controller.outcome is Saved);
+        final outcome = _controller.outcome;
+        Navigator.of(context).pop(outcome is Saved ? outcome.expense : null);
       case ConfirmDiscardLeave():
         final choice = await showDiscardExpenseDialog(context);
         if (choice == DiscardChoice.discard && mounted) {
-          Navigator.of(context).pop(false);
+          Navigator.of(context).pop(null);
         }
       case SavePendingLeave():
         final shouldCancel = await showCancelPendingSaveDialog(context);

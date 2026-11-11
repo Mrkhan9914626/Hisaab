@@ -21,9 +21,9 @@
 
 **Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
 **Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+**Storage**: [if applicable, e.g., SQLite, files or N/A]  
+**Testing**: [NOT REQUIRED by Constitution V; record manual verification or N/A]  
+**Target Platform**: [e.g., Android API 24+ or NEEDS CLARIFICATION]
 **Project Type**: [single/web/mobile - determines source structure]  
 **Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
 **Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
@@ -39,21 +39,19 @@ stacks; it does not authorize production scaffolding.
 
 - **I. Offline-first privacy:** Core flows and assets work offline; data stays in private
   device storage; no accounts, remote telemetry, or financial-data logs. Document Android
-  and iOS automatic backup/transfer controls and any platform limitations.
+  automatic backup/transfer controls and any platform limitations.
 - **II. Exact money and history:** PKR-only exact arithmetic, validated bounds/precision,
   explicit local-date and week boundaries, and a shared record set for lists and totals.
 - **III. Durable storage:** Atomic writes, restart persistence, non-destructive errors,
-  category history preservation, confirmed deletion, tested migrations when applicable,
-  and accurate no-recovery messaging.
-- **IV. Accessible mobile interaction:** Approved screen direction, both themes, platform
-  touch targets, contrast, screen readers, text scaling, safe areas, reduced motion,
-  keyboard-open forms, and explicit discard behavior.
-- **V. Test-first verification:** Failing tests precede changed behavior; plan domain,
-  persistence, failure-path, and migration tests as relevant, plus Android/iOS offline
-  and interface verification. Identify tools, devices, and untested conditions.
-- **VI. Minimal scope and decisions:** No excluded V1 features or assumed backend. Record
-  project-owner approval of the stack and supported OS versions before scaffolding;
-  resolve feature defaults and justify dependencies and complexity.
+  category history preservation, confirmed deletion, source-reviewed migrations when
+  applicable, and accurate no-recovery messaging.
+- **IV. Accessible Android interaction:** Android-only scope, approved screen direction,
+  both themes, 48 dp touch targets, contrast, screen readers, text scaling, safe areas,
+  reduced motion, keyboard-open forms, and explicit discard behavior.
+- **V. Minimal scope and source-code focus:** No excluded V1 features, no iOS scope, and
+  no assumed backend. Work stays within the approved Flutter/Android stack; automated
+  tests are not required. Resolve feature defaults and justify dependencies and
+  complexity.
 
 Repeat this checklist after Phase 1 design with links to the supporting plan sections.
 Complexity justification is not an exception approval; follow constitution Governance.
@@ -88,35 +86,27 @@ src/
 ├── cli/
 └── lib/
 
-tests/
-├── contract/
-├── integration/
-└── unit/
-
 # [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
 backend/
 ├── src/
 │   ├── models/
 │   ├── services/
 │   └── api/
-└── tests/
 
 frontend/
 ├── src/
 │   ├── components/
 │   ├── pages/
 │   └── services/
-└── tests/
 
-# [REMOVE IF UNUSED] Option 3: Offline mobile app (Android and iPhone; no V1 API)
+# [REMOVE IF UNUSED] Option 3: Offline Android app (no V1 API, no iOS scope)
 [approved-app-root]/
 ├── [presentation: approved screens, navigation, accessible components]
 ├── [domain: exact money, calendar ranges, category rules]
-├── [data: device-local storage and migrations]
-└── [tests: unit, persistence integration, and platform UI]
+└── [data: device-local storage and migrations]
 
-[platform-projects-if-required]/
-└── [Android/iOS configuration, backup/transfer controls, packaged assets]
+[android-project]/
+└── [Android configuration, backup/transfer controls, packaged assets]
 ```
 
 **Structure Decision**: [Document the selected structure and reference the real

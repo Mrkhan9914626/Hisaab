@@ -1,2 +1,2 @@
 # Hisaab
-A simple mobile application for personal expense tracking
+A simple Android application for personal expense tracking.

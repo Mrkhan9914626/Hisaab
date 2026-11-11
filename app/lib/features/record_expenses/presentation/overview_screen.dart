@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../../core/presentation/category_icon.dart';
 import '../../../core/presentation/date_format.dart';
 import '../../../core/presentation/money_text.dart';
 import '../../../core/presentation/storage_notice.dart';
+import '../../browse_history/presentation/history_screen.dart';
 import '../application/overview_controller.dart';
 import '../application/save_coordinator.dart';
 import '../data/expense_repository.dart';
@@ -13,6 +13,7 @@ import '../domain/expense.dart';
 import '../domain/overview_snapshot.dart';
 import 'add_expense_screen.dart';
 import 'expense_details_screen.dart';
+import 'expense_list_row.dart';
 
 class OverviewScreen extends StatefulWidget {
   const OverviewScreen({
@@ -86,15 +87,29 @@ class _OverviewScreenState extends State<OverviewScreen>
   }
 
   Future<void> _openAdd() async {
-    final saved = await Navigator.of(context).push<bool>(
-      MaterialPageRoute<bool>(
+    final saved = await Navigator.of(context).push<Expense>(
+      MaterialPageRoute<Expense>(
         builder: (context) => AddExpenseScreen(
           repository: widget.repository,
           coordinator: widget.coordinator,
         ),
       ),
     );
-    if (saved == true && mounted) {
+    if (saved != null && mounted) {
+      await _controller.load();
+    }
+  }
+
+  Future<void> _openHistory() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (context) => HistoryScreen(
+          repository: widget.repository,
+          coordinator: widget.coordinator,
+        ),
+      ),
+    );
+    if (mounted) {
       await _controller.load();
     }
   }
@@ -113,7 +128,19 @@ class _OverviewScreenState extends State<OverviewScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Overview')),
+      appBar: AppBar(
+        title: const Text('Overview'),
+        actions: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: TextButton.icon(
+              onPressed: _openHistory,
+              icon: const Icon(Icons.history),
+              label: const Text('History'),
+            ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openAdd,
         icon: const Icon(Icons.add),
@@ -223,7 +250,7 @@ class _OverviewScreenState extends State<OverviewScreen>
             child: Column(
               children: [
                 for (var index = 0; index < rows.length; index++) ...[
-                  _ExpenseRow(
+                  ExpenseListRow(
                     expense: rows[index],
                     onTap: () => _openDetails(rows[index]),
                   ),
@@ -259,30 +286,6 @@ class _OverviewScreenState extends State<OverviewScreen>
 
   static String _countLabel(int count) =>
       count == 1 ? '1 expense' : '$count expenses';
-}
-
-class _ExpenseRow extends StatelessWidget {
-  const _ExpenseRow({required this.expense, required this.onTap});
-
-  final Expense expense;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      key: Key('expense_${expense.id.value}'),
-      leading: CircleAvatar(
-        child: Icon(iconForCategory(expense.category.iconKey)),
-      ),
-      title: Text(expense.category.name),
-      subtitle: Text(expense.note?.text ?? expense.category.name),
-      trailing: Text(
-        MoneyText.format(expense.amount),
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
-      onTap: onTap,
-    );
-  }
 }
 
 class _EmptyEver extends StatelessWidget {

@@ -5,6 +5,8 @@ import '../../../core/domain/local_date.dart';
 import '../../../core/domain/money.dart';
 import '../../../core/storage/app_database.dart';
 import '../../../core/storage/local_storage_policy.dart';
+import '../../browse_history/domain/category_filter.dart';
+import '../../browse_history/domain/history_snapshot.dart';
 import '../domain/category.dart';
 import '../domain/expense.dart';
 import '../domain/overview_snapshot.dart';
@@ -110,6 +112,22 @@ class ExpenseRepository {
       final rows = await _database.rawQuery(
         'SELECT id, name, icon_key, is_active, is_protected '
         'FROM categories WHERE is_active = 1 ORDER BY rowid',
+      );
+      return Success(
+        rows.map(_categoryFromRow).toList(growable: false),
+      );
+    } catch (_) {
+      return const Failure<List<Category>>(
+        AppFailure(AppFailureCode.storageUnavailable),
+      );
+    }
+  }
+
+  Future<Result<List<Category>>> listCategoriesForFilter() async {
+    try {
+      final rows = await _database.rawQuery(
+        'SELECT id, name, icon_key, is_active, is_protected '
+        'FROM categories ORDER BY rowid',
       );
       return Success(
         rows.map(_categoryFromRow).toList(growable: false),
@@ -267,6 +285,82 @@ class ExpenseRepository {
         );
       }
       return const Failure<OverviewSnapshot>(
+        AppFailure(AppFailureCode.storageUnavailable),
+      );
+    }
+  }
+
+  Future<Result<HistorySnapshot>> loadHistory(HistoryQuery query) async {
+    final Database database;
+    try {
+      database = _database;
+    } catch (_) {
+      return const Failure<HistorySnapshot>(
+        AppFailure(AppFailureCode.storageUnavailable),
+      );
+    }
+
+    try {
+      return await database.transaction<Result<HistorySnapshot>>(
+        (transaction) async {
+          final where = StringBuffer(
+            'WHERE e.expense_date >= ? AND e.expense_date <= ?',
+          );
+          final arguments = <Object?>[
+            query.period.start.iso,
+            query.period.end.iso,
+          ];
+          final filter = query.filter;
+          if (filter is SelectedCategory) {
+            where.write(' AND e.category_id = ?');
+            arguments.add(filter.categoryId);
+          }
+
+          final rows = (await transaction.rawQuery(
+            '$_selectExpenseWithCategory $where '
+            'ORDER BY e.expense_date DESC, e.save_sequence DESC',
+            arguments,
+          ))
+              .map(_expenseFromRow)
+              .toList(growable: false);
+
+          final anyRows = await transaction.rawQuery(
+            'SELECT EXISTS(SELECT 1 FROM expenses) AS present',
+          );
+          final hasAnyExpenses = anyRows.isNotEmpty &&
+              anyRows.first['present'] == 1;
+
+          final latestRows = await transaction.rawQuery(
+            'SELECT MAX(expense_date) AS latest FROM expenses',
+          );
+          final latestValue =
+              latestRows.isEmpty ? null : latestRows.first['latest'];
+          LocalDate? latestExpenseDate;
+          if (latestValue is String) {
+            latestExpenseDate = LocalDate.tryParse(latestValue);
+            if (latestExpenseDate == null) {
+              return const Failure<HistorySnapshot>(
+                AppFailure(AppFailureCode.integrityFailure),
+              );
+            }
+          }
+
+          return HistorySnapshot.derive(
+            period: query.period,
+            filter: query.filter,
+            rows: rows,
+            hasAnyExpenses: hasAnyExpenses,
+            latestExpenseDate: latestExpenseDate,
+          );
+        },
+      );
+    } catch (error) {
+      if (error.toString().toLowerCase().contains('overflow')) {
+        return const Failure<HistorySnapshot>(
+          AppFailure(AppFailureCode.calculationOverflow),
+        );
+      }
+      return const Failure<HistorySnapshot>(
         AppFailure(AppFailureCode.storageUnavailable),
       );
     }
