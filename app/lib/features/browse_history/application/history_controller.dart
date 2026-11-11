@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 import '../../../core/domain/app_failure.dart';
 import '../../../core/domain/local_date.dart';
