@@ -34,9 +34,10 @@ class EntryController extends ChangeNotifier {
     required this.coordinator,
     Uuid? uuid,
     LocalDate Function()? clock,
+    LocalDate? initialDate,
   })  : _uuid = uuid ?? Uuid(),
         _clock = clock ?? LocalDate.today {
-    _draft = EntryDraft.fresh(today: _clock());
+    _draft = EntryDraft.fresh(today: initialDate ?? _clock());
     _initial = _draft;
   }
 

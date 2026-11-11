@@ -1,5 +1,10 @@
 # ADR-0001: Approved Mobile Stack and Platform Floors
 
+> **Amendment (2026-11-09):** Constitution v2.0.0 makes V1 Android-only and removes
+> automated test requirements. The iOS platform floor, iOS build/verification steps, and
+> iOS scope in this ADR are superseded. The Flutter/Dart, SQLite, Codemagic, and Android
+> API 24 decisions remain in force.
+
 > **Scope**: This ADR records the approved cross-cutting delivery stack: framework, local persistence engine, cloud build service, and minimum supported OS versions. It does not approve individual package versions or release signing.
 
 - **Status:** Accepted

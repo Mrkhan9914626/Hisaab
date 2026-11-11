@@ -1,5 +1,9 @@
 # ADR-0002: Protected SQLite and Save Coordinator
 
+> **Amendment (2026-11-09):** Constitution v2.0.0 is Android-only. The iOS protected-storage
+> location and iOS native bridge described here are out of scope; Android `noBackupFilesDir`,
+> `allowBackup=false`, and the extraction rules remain in force.
+
 > **Scope**: This ADR records the persistence, privacy-path, and write-lifecycle decision cluster. It covers storage location, exact money representation, atomic save ownership, idempotency, cancellation, and recovery. It does not claim that native feasibility gates have passed.
 
 - **Status:** Accepted

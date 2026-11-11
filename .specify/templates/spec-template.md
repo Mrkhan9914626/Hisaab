@@ -100,19 +100,21 @@
 Reference `.specify/memory/constitution.md`. Define testable requirements for each
 applicable rule and explain any genuinely inapplicable item; omission is not a waiver.
 
-- **Scope:** State V1 inclusions and exclusions. No accounts, cloud sync, income, budgets,
-  bank integration, receipt scanning, other currencies, or manual backup/restore.
+- **Scope:** State V1 inclusions and exclusions. Android-only; no iOS scope, accounts,
+  cloud sync, income, budgets, bank integration, receipt scanning, other currencies, or
+  manual backup/restore.
 - **Privacy/offline:** Core journeys work offline from first launch; no remote financial
-  telemetry or sensitive logs. Address device-only backup/transfer behavior and assets.
+  telemetry or sensitive logs. Address Android device-only backup/transfer behavior and
+  assets.
 - **Correctness:** Specify exact PKR arithmetic, precision/bounds, date semantics, period
   boundaries, week start, and consistent filtered totals and counts.
 - **Data safety:** Specify restart persistence, atomic mutations, migration preservation,
   failed read/write behavior, category archive/restore and fallback behavior, deletion
   confirmation, and first-use/Settings data-loss disclosure as relevant.
-- **Accessibility:** Cover themes, contrast, platform touch targets, screen readers,
+- **Accessibility:** Cover themes, contrast, 48 dp Android touch targets, screen readers,
   large text, reduced motion, keyboard/safe areas, errors, and discard confirmation.
-- **Verification:** Link each acceptance scenario to planned failing-first automated
-  coverage or a defined platform inspection. Tests for changed behavior are mandatory.
+- **Verification:** Link each acceptance scenario to source-level review, a successful
+  Android build, or a defined manual Android inspection. Automated tests are not required.
 
 ### Scope and Unresolved Decisions *(mandatory)*
 
@@ -138,6 +140,6 @@ applicable rule and explain any genuinely inapplicable item; omission is not a w
 - **SC-001**: [Expense-entry completion target with a defined user journey]
 - **SC-002**: [History responsiveness target with device class and local dataset size]
 - **SC-003**: [Exact-total and restart-persistence outcomes for the acceptance dataset]
-- **SC-004**: [Offline Android/iPhone and accessibility acceptance conditions]
+- **SC-004**: [Offline Android and accessibility acceptance conditions]
 
 Do not substitute browser-prototype checks for native persistence or platform evidence.

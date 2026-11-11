@@ -1,6 +1,6 @@
 # Personal Expense Tracker — Application Summary
 
-A mobile application for **Android and iPhone** that helps individuals record personal expenses and understand their spending.
+An **Android** application that helps individuals record personal expenses and understand their spending.
 
 ## Version 1
 
